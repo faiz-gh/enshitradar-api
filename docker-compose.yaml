@@ -1,0 +1,10 @@
+services:
+  # Main Application
+  api:
+    container_name: go_api
+    build: .
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - ${PORT}:${PORT}
