@@ -55,9 +55,9 @@ func (s *Store) GetChannelByName(name string) (*types.Channel, error) {
 func (s *Store) AddChannel(channel types.AddChannelPayload) (*types.Channel, error) {
 	var newChannel types.Channel
 	err := s.db.QueryRow(
-		"INSERT INTO channels (name, description, level) VALUES ($1, $2, $3)",
+		"INSERT INTO channels (name, description, level) VALUES ($1, $2, $3) RETURNING id, name, description, level, date_added",
 		channel.Name, channel.Description, channel.Level,
-	).Scan(&newChannel.ID, &newChannel.Name, &newChannel.Description, &newChannel.Level)
+	).Scan(&newChannel.ID, &newChannel.Name, &newChannel.Description, &newChannel.Level, &newChannel.DateAdded)
 	if err != nil {
 		return nil, err
 	}
