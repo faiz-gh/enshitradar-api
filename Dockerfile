@@ -16,8 +16,5 @@ RUN go build -o bin/server cmd/main.go
 # Run Database Migration Script
 RUN go run cmd/migrate/main.go up
 
-# EXPOSE the port
-EXPOSE 8000
-
 # Run the executable
 CMD ["./bin/server"]
