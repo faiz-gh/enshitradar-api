@@ -26,7 +26,7 @@ func (s *Store) AddUser() (*types.User, error) {
 }
 
 func (s *Store) GetUserByID(id string) (*types.User, error) {
-	rows, err := s.db.Query("SELECT * FROM users WHERE id = ?", id)
+	rows, err := s.db.Query("SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
 		return nil, err
 	}
