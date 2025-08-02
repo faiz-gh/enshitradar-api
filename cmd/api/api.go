@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/faiz-gh/enshitradar-api/service/product"
+	"github.com/faiz-gh/enshitradar-api/service/channel"
 	"github.com/faiz-gh/enshitradar-api/service/user"
+	// "github.com/faiz-gh/enshitradar-api/service/vote"
+
 	"github.com/gorilla/mux"
 )
 
@@ -30,9 +32,9 @@ func (s *APIServer) Run() error {
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(subrouter)
 
-	productStore := product.NewStore(s.db)
-	productHandler := product.NewHandler(productStore, userStore)
-	productHandler.RegisterRoutes(subrouter)
+	channelStore := channel.NewStore(s.db)
+	channelHandler := channel.NewHandler(channelStore)
+	channelHandler.RegisterRoutes(subrouter)
 
 	log.Println("Listening on", s.addr)
 	return http.ListenAndServe(s.addr, router)

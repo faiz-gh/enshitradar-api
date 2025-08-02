@@ -1,5 +1,5 @@
 # use official Golang image
-FROM golang:1.23.1-alpine3.20
+FROM golang:1.23-alpine3.21
 
 # set working directory
 WORKDIR /app
@@ -16,7 +16,7 @@ RUN go build -o bin/server cmd/main.go
 # Run Database Migration Script
 RUN go run cmd/migrate/main.go up
 
-#EXPOSE the port
+# EXPOSE the port
 EXPOSE 8000
 
 # Run the executable

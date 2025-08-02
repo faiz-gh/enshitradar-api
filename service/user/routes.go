@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/faiz-gh/enshitradar-api/service/auth"
 	"github.com/faiz-gh/enshitradar-api/types"
 	"github.com/faiz-gh/enshitradar-api/utils"
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
@@ -20,89 +18,34 @@ func NewHandler(store types.UserStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/login", h.handleLogin).Methods("POST")
-	router.HandleFunc("/register", h.handleRegister).Methods("POST")
+	router.HandleFunc("/user", h.handleAddUser).Methods(http.MethodGet)
+	router.HandleFunc("/user/{id}", h.handleGetUserByID).Methods(http.MethodGet)
 }
 
-func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
-	// Get JSON Payload
-	var payload types.LoginUserPayload
-	if err := utils.ParseJSON(r, &payload); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err)
-		return
-	}
-
-	// Validate the payload
-	if err := utils.Validate.Struct(payload); err != nil {
-		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload %v", errors))
-		return
-	}
-
-	// Checking if the user exists
-	u, err := h.store.GetUserByEmail(payload.Email)
-	if err != nil {
-		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("not found, invalid email or password"))
-		return
-	}
-
-	// Check if the password is matching
-	if !auth.ComparePasswords(u.Password, []byte(payload.Password)) {
-		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("not found, invalid email or password"))
-		return
-	}
-
-	// Generate a Signed JWT Token
-	token, err := auth.CreateJWT(u.ID)
+func (h *Handler) handleAddUser(w http.ResponseWriter, r *http.Request) {
+	user, err := h.store.AddUser()
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	// Return the JWT Token as Response
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
+	utils.WriteJSON(w, http.StatusCreated, user)
 }
 
-func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
-	// Get JSON Payload
-	var payload types.RegisterUserPayload
-	if err := utils.ParseJSON(r, &payload); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err)
-		return
-	}
+func (h *Handler) handleGetUserByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
 
-	// Validate the payload
-	if err := utils.Validate.Struct(payload); err != nil {
-		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload %v", errors))
-		return
-	}
-
-	// Check if the user exists
-	_, err := h.store.GetUserByEmail(payload.Email)
-	if err == nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with email %s already exists", payload.Email))
-		return
-	}
-
-	// Hash the password
-	hashedPassword, err := auth.HashPassword(payload.Password)
+	user, err := h.store.GetUserByID(id)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	// If it doesn't, we create the user
-	err = h.store.CreateUser(types.User{
-		FirstName: payload.FirstName,
-		LastName:  payload.LastName,
-		Email:     payload.Email,
-		Password:  hashedPassword,
-	})
-	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
+	if user == nil {
+		utils.WriteError(w, http.StatusNotFound, fmt.Errorf("user not found"))
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, nil)
+	utils.WriteJSON(w, http.StatusOK, user)
 }

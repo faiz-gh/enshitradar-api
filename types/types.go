@@ -3,59 +3,44 @@ package types
 import "time"
 
 type UserStore interface {
-	GetUserByEmail(email string) (*User, error)
-	GetUserByID(id int) (*User, error)
-	CreateUser(User) error
+	AddUser() (*User, error)
+	GetUserByID(id string) (*User, error)
 }
 
-type ProductStore interface {
-	GetProducts() ([]Product, error)
+type ChannelStore interface {
+	GetChannels() ([]Channel, error)
+	AddChannel(channel AddChannelPayload) (*Channel, error)
+	GetChannelByName(name string) (*Channel, error)
+}
+
+type VoteStore interface {
+	AddVote(vote Vote) error
+	GetVotesByChannelID(channelID string) ([]Vote, error)
 }
 
 type User struct {
-	ID        int       `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
+	ID string `json:"id"`
 }
 
-type Product struct {
-	ID          int       `json:"id"`
+type Channel struct {
+	ID          string    `json:"id"`
 	Name        string    `json:"name"`
+	Level       string    `json:"level"`
 	Description string    `json:"description"`
-	Image       string    `json:"image"`
-	Price       float64   `json:"price"`
-	Quantity    int       `json:"quantity"`
-	CreatedAt   time.Time `json:"created_at"`
+	DateAdded   time.Time `json:"date_added"`
 }
 
-type Order struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"user_id"`
-	Total     float64   `json:"total"`
-	Status    string    `json:"status"`
-	Address   string    `json:"address"`
-	CreatedAt time.Time `json:"created_at"`
+type Vote struct {
+	ID              string    `json:"id"`
+	ChannelID       string    `json:"channel_id"`
+	UserID          string    `json:"user_id"`
+	Level           string    `json:"level"`
+	PublicIPAddress string    `json:"public_ip_address"`
+	DateAdded       time.Time `json:"date_added"`
 }
 
-type OrderItem struct {
-	ID        int     `json:"id"`
-	OrderID   int     `json:"order_id"`
-	ProductID int     `json:"product_id"`
-	Quantity  int     `json:"quantity"`
-	Price     float64 `json:"price"`
-}
-
-type RegisterUserPayload struct {
-	FirstName string `json:"first_name" validate:"required"`
-	LastName  string `json:"last_name" validate:"required"`
-	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"password" validate:"required,min=3,max=130"`
-}
-
-type LoginUserPayload struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+type AddChannelPayload struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Level       string `json:"level"`
 }
