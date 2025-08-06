@@ -18,9 +18,9 @@ func NewHandler(store types.ChannelStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/channels", h.HandleGetChannels).Methods(http.MethodGet)
-	router.HandleFunc("/channels/{name}", h.HandleGetChannelByName).Methods(http.MethodGet)
-	router.HandleFunc("/channels", h.HandleAddChannel).Methods(http.MethodPost)
+	router.HandleFunc("/channel", h.HandleGetChannels).Methods(http.MethodGet)
+	router.HandleFunc("/channel/{channel_id}", h.HandleGetChannelByID).Methods(http.MethodGet)
+	router.HandleFunc("/channel", h.HandleAddChannel).Methods(http.MethodPost)
 }
 
 func (h *Handler) HandleGetChannels(w http.ResponseWriter, r *http.Request) {
@@ -33,11 +33,11 @@ func (h *Handler) HandleGetChannels(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, channels)
 }
 
-func (h *Handler) HandleGetChannelByName(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleGetChannelByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	name := vars["name"]
+	channelID := vars["channel_id"]
 
-	channel, err := h.store.GetChannelByName(name)
+	channel, err := h.store.GetChannelByID(channelID)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
