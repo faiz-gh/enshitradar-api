@@ -20,6 +20,7 @@ func NewHandler(store types.ChannelStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/channel", h.HandleGetChannels).Methods(http.MethodGet)
 	router.HandleFunc("/channel/{channel_id}", h.HandleGetChannelByID).Methods(http.MethodGet)
+	router.HandleFunc("/channel/name/{name}", h.HandleGetChannelByName).Methods(http.MethodGet)
 	router.HandleFunc("/channel", h.HandleAddChannel).Methods(http.MethodPost)
 }
 
@@ -38,6 +39,24 @@ func (h *Handler) HandleGetChannelByID(w http.ResponseWriter, r *http.Request) {
 	channelID := vars["channel_id"]
 
 	channel, err := h.store.GetChannelByID(channelID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if channel == nil {
+		utils.WriteError(w, http.StatusNotFound, fmt.Errorf("channel not found"))
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, channel)
+}
+
+func (h *Handler) HandleGetChannelByName(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+
+	channel, err := h.store.GetChannelByName(name)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return

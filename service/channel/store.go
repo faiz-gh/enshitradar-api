@@ -52,6 +52,25 @@ func (s *Store) GetChannelByID(channelID string) (*types.Channel, error) {
 	return channel, nil
 }
 
+func (s *Store) GetChannelByName(name string) (*types.Channel, error) {
+	rows, err := s.db.Query("SELECT * FROM channels WHERE name = $1", name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
+	channel, err := scanRowsIntoChannel(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return channel, nil
+}
+
 func (s *Store) AddChannel(channel types.AddChannelPayload) (*types.Channel, error) {
 	var newChannel types.Channel
 	err := s.db.QueryRow(

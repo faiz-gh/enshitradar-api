@@ -11,7 +11,7 @@ type ChannelStore interface {
 	GetChannels() ([]Channel, error)
 	AddChannel(channel AddChannelPayload) (*Channel, error)
 	GetChannelByID(channelID string) (*Channel, error)
-	GetChannelByName(w`name string) (*Channel, error)
+	GetChannelByName(name string) (*Channel, error)
 }
 
 type VoteStore interface {
